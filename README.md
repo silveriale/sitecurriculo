@@ -1,5 +1,7 @@
 Meu site currículo
 
+Acesse em: https://curriculole.vercel.app/
+
 Portfólio pessoal interativo desenvolvido com React, TypeScript e Framer Motion. Apresenta uma experiência de scroll única com animações baseadas no progresso do scroll, transições suaves entre seções e design responsivo.
 
 
