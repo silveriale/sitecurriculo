@@ -1,0 +1,137 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradiente do céu - mais suave -->
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#bae6fd;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e0e7ff;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradiente para o texto LS -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Efeito de brilho sutil ao redor -->
+    <radialGradient id="glow" cx="50%" cy="50%">
+      <stop offset="75%" style="stop-color:#06b6d4;stop-opacity:0.2" />
+      <stop offset="90%" style="stop-color:#a855f7;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:transparent;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- Filtro de blur para o fundo atrás do texto -->
+    <filter id="blurBackground" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="4" in="SourceGraphic"/>
+    </filter>
+    
+    <!-- Filtro de sombra para o texto -->
+    <filter id="textShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="0.8"/>
+      <feOffset dx="0" dy="1.5" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.4"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Fundo com brilho sutil -->
+  <circle cx="32" cy="32" r="30" fill="url(#glow)" />
+  
+  <!-- Círculo principal com borda branca -->
+  <circle cx="32" cy="32" r="28" fill="white" stroke="white" stroke-width="1"/>
+  
+  <!-- Máscara para o conteúdo interno -->
+  <clipPath id="circleClip">
+    <circle cx="32" cy="32" r="27"/>
+  </clipPath>
+  
+  <g clip-path="url(#circleClip)">
+    <!-- Gradiente do céu (parte superior) -->
+    <rect x="5" y="5" width="54" height="32" fill="url(#skyGradient)"/>
+    
+    <!-- Ondas/colinas (parte inferior) - cores mais suaves -->
+    <!-- Onda 1 - Turquesa suave -->
+    <path d="M 5 37 Q 16 32, 27 37 T 37 37 T 47 37 T 59 37 L 59 59 L 5 59 Z" fill="#22d3ee" opacity="0.9"/>
+    
+    <!-- Onda 2 - Cyan médio -->
+    <path d="M 5 47 Q 16 42, 27 47 T 37 47 T 47 47 T 59 47 L 59 59 L 5 59 Z" fill="#06b6d4" opacity="0.85"/>
+    
+    <!-- Onda 3 - Azul escuro -->
+    <path d="M 5 57 Q 16 52, 27 57 T 37 57 T 47 57 T 59 57 L 59 59 L 5 59 Z" fill="#0f172a" opacity="0.9"/>
+    
+    <!-- Silhueta da cidade (5 prédios) - simplificada -->
+    <!-- Prédio 1 (médio) -->
+    <rect x="12" y="26" width="3.5" height="7" fill="white" opacity="0.95"/>
+    <circle cx="13.5" cy="27.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="14.5" cy="27.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="13.5" cy="29.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="14.5" cy="29.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    
+    <!-- Prédio 2 (alto) -->
+    <rect x="18" y="21" width="3.5" height="12" fill="white" opacity="0.95"/>
+    <circle cx="19.5" cy="22.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="20.5" cy="22.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="19.5" cy="25" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="20.5" cy="25" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="19.5" cy="27.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="20.5" cy="27.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    
+    <!-- Prédio 3 (muito alto) -->
+    <rect x="24" y="16" width="3.5" height="17" fill="white" opacity="0.95"/>
+    <circle cx="25.5" cy="17.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="26.5" cy="17.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="25.5" cy="20" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="26.5" cy="20" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="25.5" cy="22.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="26.5" cy="22.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="25.5" cy="25" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="26.5" cy="25" r="0.4" fill="#1e293b" opacity="0.5"/>
+    
+    <!-- Prédio 4 (alto) -->
+    <rect x="30" y="21" width="3.5" height="12" fill="white" opacity="0.95"/>
+    <circle cx="31.5" cy="22.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="32.5" cy="22.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="31.5" cy="25" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="32.5" cy="25" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="31.5" cy="27.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="32.5" cy="27.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    
+    <!-- Prédio 5 (médio) -->
+    <rect x="36" y="26" width="3.5" height="7" fill="white" opacity="0.95"/>
+    <circle cx="37.5" cy="27.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="38.5" cy="27.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="37.5" cy="29.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    <circle cx="38.5" cy="29.5" r="0.4" fill="#1e293b" opacity="0.5"/>
+    
+    <!-- Fundo desfocado atrás do texto LS - usando grupo para aplicar blur -->
+    <g filter="url(#blurBackground)">
+      <rect x="14" y="26" width="36" height="20" fill="white" opacity="0.5" rx="6"/>
+    </g>
+    
+    <!-- Texto "LS" - MUITO MAIOR, ARREDONDADO, COM BORDA BRANCA -->
+    <text 
+      x="32" 
+      y="41" 
+      font-family="'Nunito', 'Comfortaa', 'Quicksand', 'Varela Round', 'Rounded', Arial, sans-serif" 
+      font-size="26" 
+      font-weight="900" 
+      fill="url(#textGradient)" 
+      text-anchor="middle" 
+      letter-spacing="3"
+      stroke="white"
+      stroke-width="1.2"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+      paint-order="stroke fill"
+      filter="url(#textShadow)"
+      style="font-variant-numeric: tabular-nums;"
+    >LS</text>
+    
+    <!-- Estrela no canto inferior direito - sutil -->
+    <path d="M 50 50 L 50.8 52.2 L 53 52.2 L 51.1 53.6 L 51.8 55.8 L 50 54.6 L 48.2 55.8 L 48.9 53.6 L 47 52.2 L 49.2 52.2 Z" fill="#fbbf24" opacity="0.8"/>
+  </g>
+</svg>
