@@ -39,6 +39,9 @@ interface BackgroundLayerProps {
  * @returns {JSX.Element} Componente React renderizado
  */
 export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ progress }) => {
+  // Detecta se é mobile para reduzir elementos
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  
   /**
    * Controla o gradiente de fundo baseado no progresso do scroll.
    * 
@@ -87,25 +90,40 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ progress }) =>
    */
   const cityOpacity = useTransform(progress, [0.35, 0.5], [0, 1]);
 
+  // Reduz número de prédios e janelas em mobile para melhor performance
+  const buildingCount = isMobile ? 8 : 15;
+  const windowsPerBuilding = isMobile ? 6 : 12;
+
   return (
     // Container principal com gradiente de fundo animado
     <motion.div 
-      style={{ background: bgGradient }} // Gradiente controlado pelo scroll
+      style={{ 
+        background: bgGradient,
+        willChange: 'background'
+      }} // Gradiente controlado pelo scroll
       className="absolute inset-0 overflow-hidden" // Cobre toda a tela, esconde overflow
     >
       {/* Elementos do cenário RJ/Praia */}
       
       {/* Sol: círculo amarelo com blur para efeito de brilho */}
       {/* Responsivo: w-32 h-32 em mobile, w-64 h-64 em desktop */}
+      {/* Blur reduzido em mobile */}
       <motion.div 
-        style={{ y: sunY, opacity: sunOpacity }} // Posição e opacidade controladas
-        className="absolute top-20 right-20 w-32 h-32 md:w-64 md:h-64 bg-yellow-300 rounded-full blur-2xl opacity-60"
+        style={{ 
+          y: sunY, 
+          opacity: sunOpacity,
+          willChange: 'transform, opacity'
+        }} // Posição e opacidade controladas
+        className={`absolute top-20 right-20 w-32 h-32 md:w-64 md:h-64 bg-yellow-300 rounded-full ${isMobile ? 'blur-xl' : 'blur-2xl'} opacity-60`}
       />
       
       {/* Ondas: SVG com forma de onda na parte inferior */}
       {/* fill-sky-800/40: cor azul escura com 40% de opacidade */}
       <motion.svg 
-        style={{ opacity: sunOpacity }} // Opacidade sincronizada com o sol
+        style={{ 
+          opacity: sunOpacity,
+          willChange: 'opacity'
+        }} // Opacidade sincronizada com o sol
         className="absolute bottom-0 left-0 w-full h-[30vh] fill-sky-800/40"
         viewBox="0 0 1000 300" 
         preserveAspectRatio="none" // Mantém proporção sem distorção
@@ -116,22 +134,26 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ progress }) =>
 
       {/* Elementos do cenário SP/Cidade */}
       <motion.div
-        style={{ y: cityY, opacity: cityOpacity }} // Posição e opacidade controladas
+        style={{ 
+          y: cityY, 
+          opacity: cityOpacity,
+          willChange: 'transform, opacity'
+        }} // Posição e opacidade controladas
         className="absolute inset-x-0 bottom-0 h-full pointer-events-none" // pointer-events-none: não interfere com interações
       >
          {/* Container do skyline: prédios na parte inferior */}
          {/* h-[60vh]: altura de 60% da viewport */}
          {/* flex items-end: alinha prédios na parte inferior */}
          <div className="absolute bottom-0 w-full h-[60vh] flex items-end justify-around gap-2 px-10">
-            {/* Gera 15 prédios com características aleatórias */}
+            {/* Gera prédios com características aleatórias - reduzido em mobile */}
             {/* Usa IIFE (Immediately Invoked Function Expression) para calcular valores aleatórios uma vez */}
             {(() => {
               // Cria array de prédios com propriedades calculadas uma vez
-              const buildings = Array.from({ length: 15 }, (_, i) => ({
+              const buildings = Array.from({ length: buildingCount }, (_, i) => ({
                 id: i,                                    // ID único para key do React
                 height: 20 + Math.random() * 60,         // Altura aleatória entre 20% e 80%
-                // Cria 12 janelas por prédio com propriedades aleatórias
-                windows: Array.from({ length: 12 }, (_, j) => ({
+                // Cria janelas por prédio com propriedades aleatórias - reduzido em mobile
+                windows: Array.from({ length: windowsPerBuilding }, (_, j) => ({
                   id: j,                                 // ID único para key do React
                   isYellow: Math.random() > 0.8,         // 20% de chance de ser amarelo (luz acesa)
                   opacity: Math.random()                  // Opacidade aleatória para variação visual
@@ -144,10 +166,13 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ progress }) =>
                 <div 
                     key={building.id} 
                     className="flex-1 bg-slate-900 border-t border-x border-slate-800 relative rounded-t-lg"
-                    style={{ height: `${building.height}%` }} // Altura dinâmica baseada no valor calculado
+                    style={{ 
+                      height: `${building.height}%`,
+                      willChange: 'transform'
+                    }} // Altura dinâmica baseada no valor calculado
                 >
-                    {/* Grid de janelas: 2 colunas, 6 linhas (12 janelas total) */}
-                    <div className="grid grid-cols-2 gap-1 p-2">
+                    {/* Grid de janelas: 2 colunas, linhas variadas */}
+                    <div className={`grid grid-cols-2 gap-1 p-2`}>
                         {building.windows.map((window) => (
                             <div 
                                 key={window.id} 
@@ -157,9 +182,9 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ progress }) =>
                             />
                         ))}
                     </div>
-                    {/* Antena: linha vertical roxa com brilho (shadow) */}
-                    {/* Renderiza apenas se hasAntenna for true */}
-                    {building.hasAntenna && (
+                    {/* Antena: linha vertical roxa com brilho (shadow) - removida em mobile */}
+                    {/* Renderiza apenas se hasAntenna for true e não for mobile */}
+                    {building.hasAntenna && !isMobile && (
                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-[2px] h-8 bg-purple-500 shadow-[0_0_10px_purple]" />
                     )}
                 </div>

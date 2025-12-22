@@ -38,13 +38,14 @@ const App: React.FC = () => {
     offset: ["start start", "end end"] // Começa no início do elemento e termina no final
   });
 
+  // Detecta se é mobile para ajustar performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   // Aplica um efeito de mola (spring) ao progresso do scroll para suavizar as animações
-  // stiffness: rigidez da mola (quanto maior, mais rápida a resposta)
-  // damping: amortecimento (quanto maior, menos oscilação)
-  // restDelta: valor mínimo de mudança para considerar que parou
+  // Valores reduzidos para mobile para melhor performance
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
+    stiffness: isMobile ? 50 : 100, // Reduzido para mobile
+    damping: isMobile ? 25 : 30,     // Reduzido para mobile
     restDelta: 0.001
   });
 
@@ -74,7 +75,7 @@ const App: React.FC = () => {
     <div ref={containerRef} className="relative h-[500vh] w-full selection:bg-cyan-500 selection:text-white">
       {/* Camada de fundo fixa que permanece visível durante todo o scroll */}
       {/* pointer-events-none: permite que eventos de mouse passem através */}
-      <div className="fixed inset-0 h-screen w-full pointer-events-none">
+      <div className="fixed inset-0 h-screen w-full pointer-events-none" style={{ willChange: 'transform' }}>
         <BackgroundLayer progress={smoothProgress} />
       </div>
 
@@ -88,7 +89,11 @@ const App: React.FC = () => {
           <motion.div 
             // Opacidade controlada pelo progresso do scroll
             // y: movimento vertical suave para cima durante o scroll inicial (ajustado para acontecer mais cedo)
-            style={{ opacity: sceneOpacity1, y: useTransform(smoothProgress, [0, 0.25], [0, -100]) }}
+            style={{ 
+              opacity: sceneOpacity1, 
+              y: useTransform(smoothProgress, [0, 0.25], [0, -100]),
+              willChange: 'transform, opacity'
+            }}
             className="text-center px-4"
           >
           {/* Título principal com animação de entrada */}
@@ -126,7 +131,10 @@ const App: React.FC = () => {
       {/* Responsivo: padding reduzido em mobile (py-2) para caber todos os cards */}
       <section className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden z-20 px-3 md:px-4 py-2 md:py-0">
         <motion.div 
-          style={{ opacity: sceneOpacity3 }}
+          style={{ 
+            opacity: sceneOpacity3,
+            willChange: 'opacity'
+          }}
           className="max-w-6xl w-full"
         >
           {/* Título da seção */}
@@ -141,7 +149,8 @@ const App: React.FC = () => {
             {/* CARD 1: Back-end & APIs */}
             <motion.div 
               whileHover={{ y: -5 }} // Efeito de elevação ao passar o mouse
-              className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-purple-500/50 transition-all"
+              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-purple-500/50 transition-all`}
+              style={{ willChange: 'transform' }}
             >
               {/* Ícone do card - código/back-end */}
               {/* Responsivo: w-7 h-7 em mobile, w-10 h-10 em desktop */}
@@ -167,7 +176,8 @@ const App: React.FC = () => {
             {/* CARD 2: UX/UI & Front-end */}
             <motion.div 
               whileHover={{ y: -5 }}
-              className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-cyan-500/50 transition-all"
+              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-cyan-500/50 transition-all`}
+              style={{ willChange: 'transform' }}
             >
               {/* Ícone do card - interface/UI */}
               <div className="w-7 h-7 md:w-10 md:h-10 bg-cyan-500 rounded-lg md:rounded-xl mb-2 md:mb-6 flex items-center justify-center">
@@ -186,7 +196,8 @@ const App: React.FC = () => {
             {/* CARD 3: Infra & Tools */}
             <motion.div 
               whileHover={{ y: -5 }}
-              className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-emerald-500/50 transition-all"
+              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-emerald-500/50 transition-all`}
+              style={{ willChange: 'transform' }}
             >
               {/* Ícone do card - ferramentas/infraestrutura */}
               <div className="w-7 h-7 md:w-10 md:h-10 bg-emerald-500 rounded-lg md:rounded-xl mb-2 md:mb-6 flex items-center justify-center">
@@ -215,7 +226,10 @@ const App: React.FC = () => {
       {/* scaleX: escala horizontal baseada no progresso do scroll (0 a 1) */}
       {/* origin-left: a animação começa da esquerda */}
       <motion.div 
-        style={{ scaleX: scrollYProgress }} 
+        style={{ 
+          scaleX: scrollYProgress,
+          willChange: 'transform'
+        }} 
         className="fixed bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-purple-500 origin-left z-50" 
       />
     </div>
