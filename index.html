@@ -37,6 +37,23 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #475569;
         }
+        /* Garante que o texto na seção de Trajetória Técnica possa ser selecionado */
+        section[class*="Trajetória"] *,
+        .select-text,
+        [style*="userSelect: 'text'"],
+        [style*="pointerEvents: 'auto'"] {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+        }
+        /* Força pointer-events auto na seção de Trajetória Técnica quando visível */
+        section.z-30 {
+            pointer-events: auto !important;
+        }
+        section.z-30 * {
+            pointer-events: auto !important;
+        }
     </style>
 <script type="importmap">
 {

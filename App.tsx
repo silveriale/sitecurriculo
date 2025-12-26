@@ -33,9 +33,10 @@ const App: React.FC = () => {
   // Hook do Framer Motion que retorna o progresso do scroll (0 a 1)
   // target: elemento a ser observado para o scroll
   // offset: define quando o scroll começa e termina de ser rastreado
+  // Ajustado para terminar no final do container para que a barra de progresso complete
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end end"] // Começa no início do elemento e termina no final
+    offset: ["start start", "end end"] // Termina quando chegamos ao final do container
   });
 
   // Detecta se é mobile para ajustar performance
@@ -62,17 +63,24 @@ const App: React.FC = () => {
   const sceneOpacity1 = useTransform(smoothProgress, [0, 0.15, 0.25], [1, 1, 0]);
   
   // Opacidade da terceira seção (Tela 3 - Trajetória Técnica)
-  // Fade in mais cedo entre 0.45 e 0.55, permanece visível até 0.6, fade out rápido até 0.7
-  const sceneOpacity3 = useTransform(smoothProgress, [0.45, 0.55, 0.6, 0.7], [0, 1, 1, 0]);
+  // Fade in entre 0.45 e 0.55, permanece visível até 0.6, fade out rápido até 0.65
+  const sceneOpacity3 = useTransform(smoothProgress, [0.45, 0.55, 0.6, 0.65], [0, 1, 1, 0]);
+  
+  // Controla pointer-events baseado na opacidade: habilita quando opacidade > 0.1
+  // Isso garante que a seleção de texto funcione quando a seção está visível
+  const scene3PointerEvents = useTransform(sceneOpacity3, (value: number) => value > 0.1 ? 'auto' : 'none');
   
   // Opacidade da quarta seção (Tela 4 - Contato)
-  // Fade in entre 0.6 e 0.7 do progresso do scroll (transição rápida)
-  const sceneOpacity4 = useTransform(smoothProgress, [0.6, 0.7], [0, 1]);
+  // Fade in entre 0.65 e 0.75 do progresso do scroll, depois permanece visível
+  // A última seção aparece e fica fixa, permitindo que a barra complete
+  const sceneOpacity4 = useTransform(smoothProgress, [0.65, 0.75], [0, 1]);
 
   return (
-    // Container principal com altura de 500vh (5x a altura da viewport) para permitir scroll longo
+    // Container principal com altura de 400vh (4x a altura da viewport)
+    // Altura ajustada para que a última seção apareça e o scroll termine naturalmente
+    // A barra de progresso completa quando chegamos ao final
     // selection: estiliza o texto selecionado com cores cyan
-    <div ref={containerRef} className="relative h-[500vh] w-full selection:bg-cyan-500 selection:text-white">
+    <div ref={containerRef} className="relative h-[400vh] w-full selection:bg-cyan-500 selection:text-white">
       {/* Camada de fundo fixa que permanece visível durante todo o scroll */}
       {/* pointer-events-none: permite que eventos de mouse passem através */}
       <div className="fixed inset-0 h-screen w-full pointer-events-none" style={{ willChange: 'transform' }}>
@@ -129,18 +137,23 @@ const App: React.FC = () => {
 
       {/* TELA 03: Seção de Trajetória Técnica - Tema Cidade/Tech */}
       {/* Responsivo: padding reduzido em mobile (py-2) para caber todos os cards */}
-      <section className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden z-20 px-3 md:px-4 py-2 md:py-0">
+      <section className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden z-30 px-3 md:px-4 py-2 md:py-0 select-text" style={{ userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text', pointerEvents: 'auto' }}>
         <motion.div 
           style={{ 
             opacity: sceneOpacity3,
-            willChange: 'opacity'
+            pointerEvents: scene3PointerEvents,
+            willChange: 'opacity',
+            userSelect: 'text',
+            WebkitUserSelect: 'text',
+            MozUserSelect: 'text',
+            msUserSelect: 'text'
           }}
-          className="max-w-6xl w-full"
+          className="max-w-6xl w-full select-text"
         >
           {/* Título da seção */}
           {/* Responsivo: text-lg em mobile, text-5xl em desktop */}
           <div className="text-center mb-2 md:mb-12">
-            <h3 className="text-lg md:text-5xl font-black text-white leading-tight">Trajetória Técnica</h3>
+            <h3 className="text-lg md:text-5xl font-black text-white leading-tight select-text" style={{ userSelect: 'text' }}>Trajetória Técnica</h3>
           </div>
 
           {/* Grid de cards: 1 coluna em mobile, 3 colunas em desktop */}
@@ -149,8 +162,9 @@ const App: React.FC = () => {
             {/* CARD 1: Back-end & APIs */}
             <motion.div 
               whileHover={{ y: -5 }} // Efeito de elevação ao passar o mouse
-              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-purple-500/50 transition-all`}
-              style={{ willChange: 'transform' }}
+              drag={false} // Desabilita drag para permitir seleção de texto
+              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-purple-500/50 transition-all select-text`}
+              style={{ willChange: 'transform', userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text' }}
             >
               {/* Ícone do card - código/back-end */}
               {/* Responsivo: w-7 h-7 em mobile, w-10 h-10 em desktop */}
@@ -161,55 +175,57 @@ const App: React.FC = () => {
               
               {/* Título do card */}
               {/* Responsivo: text-sm em mobile, text-xl em desktop */}
-              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4">Back-end & APIs</h3>
+              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4 select-text" style={{ userSelect: 'text' }}>Back-end & APIs</h3>
               
               {/* Lista de habilidades */}
               {/* Responsivo: text-[10px] em mobile, text-sm em desktop, space-y-1 em mobile */}
-              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight">
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-purple-500 rounded-full"/> Node.js & TypeScript</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-purple-500 rounded-full"/> Arquitetura RESTful & HTTP</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-purple-500 rounded-full"/> Bancos de Dados SQL/NoSQL</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-purple-500 rounded-full"/> Deploy de Aplicações</li>
+              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight select-text" style={{ userSelect: 'text' }}>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-purple-500 rounded-full"/> Node.js & TypeScript</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-purple-500 rounded-full"/> Arquitetura RESTful & HTTP</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-purple-500 rounded-full"/> Bancos de Dados SQL/NoSQL</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-purple-500 rounded-full"/> Deploy de Aplicações</li>
               </ul>
             </motion.div>
 
             {/* CARD 2: UX/UI & Front-end */}
             <motion.div 
               whileHover={{ y: -5 }}
-              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-cyan-500/50 transition-all`}
-              style={{ willChange: 'transform' }}
+              drag={false} // Desabilita drag para permitir seleção de texto
+              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-cyan-500/50 transition-all select-text`}
+              style={{ willChange: 'transform', userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text' }}
             >
               {/* Ícone do card - interface/UI */}
               <div className="w-7 h-7 md:w-10 md:h-10 bg-cyan-500 rounded-lg md:rounded-xl mb-2 md:mb-6 flex items-center justify-center">
                 {/* SVG de layout/interface (janelas) */}
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
               </div>
-              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4">UX/UI & Front-end</h3>
-              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight">
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-cyan-500 rounded-full"/> React & Fundamentos Web</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-cyan-500 rounded-full"/> Tailwind CSS Avançado</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-cyan-500 rounded-full"/> Estudos de UX/UI Design</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-cyan-500 rounded-full"/> HTML, CSS, JS ES6+ & TS</li>
+              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4 select-text" style={{ userSelect: 'text' }}>UX/UI & Front-end</h3>
+              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight select-text" style={{ userSelect: 'text' }}>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-cyan-500 rounded-full"/> React & Fundamentos Web</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-cyan-500 rounded-full"/> Tailwind CSS Avançado</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-cyan-500 rounded-full"/> Estudos de UX/UI Design</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-cyan-500 rounded-full"/> HTML, CSS, JS ES6+ & TS</li>
               </ul>
             </motion.div>
 
             {/* CARD 3: Infra & Tools */}
             <motion.div 
               whileHover={{ y: -5 }}
-              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-emerald-500/50 transition-all`}
-              style={{ willChange: 'transform' }}
+              drag={false} // Desabilita drag para permitir seleção de texto
+              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-emerald-500/50 transition-all select-text`}
+              style={{ willChange: 'transform', userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text' }}
             >
               {/* Ícone do card - ferramentas/infraestrutura */}
               <div className="w-7 h-7 md:w-10 md:h-10 bg-emerald-500 rounded-lg md:rounded-xl mb-2 md:mb-6 flex items-center justify-center">
                 {/* SVG de computador/ferramentas */}
                 <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
               </div>
-              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4">Infra & Tools</h3>
-              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight">
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Docker & Containerização</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Git & GitHub (Flow)</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Testes Automatizados</li>
-                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Configuração de Ambiente</li>
+              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4 select-text" style={{ userSelect: 'text' }}>Infra & Tools</h3>
+              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight select-text" style={{ userSelect: 'text' }}>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Docker & Containerização</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Git & GitHub (Flow)</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Testes Automatizados</li>
+                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Configuração de Ambiente</li>
               </ul>
             </motion.div>
           </div>

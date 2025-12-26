@@ -45,12 +45,12 @@ export const WaveTransition: React.FC<WaveTransitionProps> = ({ progress }) => {
    * - 0.2: onda começa a entrar (100vh = abaixo da tela)
    * - 0.3: onda está na posição 0 (cobrindo a tela)
    * - 0.35: onda permanece na posição 0
-   * - 0.45: onda sai completamente (-118vh = acima da tela)
+   * - 0.45: onda sai completamente (-120vh = acima da tela)
    */
   const waveY = useTransform(
     progress,
     [0.2, 0.3, 0.35, 0.45], // Breakpoints do progresso do scroll (ajustados para mais rápido)
-    ["100vh", "0vh", "0vh", "-118vh"] // Valores de posição Y correspondentes
+    ["100vh", "0vh", "0vh", "-120vh"] // Valores de posição Y correspondentes
   );
 
   /**
@@ -61,7 +61,7 @@ export const WaveTransition: React.FC<WaveTransitionProps> = ({ progress }) => {
   const waveRotate = useTransform(
     progress,
     [0.2, 0.3, 0.35, 0.45], // Breakpoints ajustados
-    [2, 0, 0, -2] // Valores de rotação em graus
+    [0, 0, 0, 0] // Valores de rotação em graus
   );
 
   /**
@@ -95,6 +95,7 @@ export const WaveTransition: React.FC<WaveTransitionProps> = ({ progress }) => {
       style={{ y: waveY, rotate: waveRotate, zIndex: 45 }} // Posição Y, rotação e z-index controlados
       className="fixed inset-0 w-full h-[120vh] pointer-events-none" // pointer-events-none: não interfere com interações
     >
+       
       {/* Curva superior da onda (SVG) */}
       {/* -translate-y-[99%]: move o SVG para cima, deixando apenas a curva visível */}
       <svg

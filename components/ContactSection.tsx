@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { motion, MotionValue } from 'framer-motion';
+import { motion, MotionValue, useTransform } from 'framer-motion';
 
 /**
  * Props do componente ContactSection.
@@ -30,10 +30,16 @@ interface ContactSectionProps {
  * @returns {JSX.Element} Componente React renderizado
  */
 export const ContactSection: React.FC<ContactSectionProps> = ({ opacity }) => {
+  const currentYear = new Date().getFullYear();
+  
+  // Controla pointer-events baseado na opacidade: desabilita quando opacidade < 0.1
+  // Isso previne que links "fantasma" sejam clicáveis quando a seção não está visível
+  const pointerEvents = useTransform(opacity, (value: number) => value < 0.1 ? 'none' : 'auto');
+  
   return (
     // Container principal com opacidade controlada pelo scroll
     <motion.div 
-      style={{ opacity }}
+      style={{ opacity, pointerEvents }}
       className="text-center w-full max-w-3xl"
     >
       {/* Linha decorativa com gradiente cyan para purple */}
@@ -46,7 +52,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ opacity }) => {
       <motion.div
         initial={{ y: 40, opacity: 0 }}  // Estado inicial: 40px abaixo e invisível
         whileInView={{ y: 0, opacity: 1 }} // Estado quando entra na viewport: posição original e visível
-        transition={{ duration: 0.8 }} // Duração da animação: 0.8 segundos
+        transition={{ duration: 1.8 }} // Duração da animação: 1.8 segundos (aumentada em 1s)
       >
         {/* Nome principal */}
         {/* Responsivo: text-5xl em mobile, text-7xl em desktop */}
@@ -103,7 +109,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ opacity }) => {
       {/* Rodapé com copyright */}
       {/* mt-20: margem superior de 5rem para espaçamento */}
       <p className="mt-20 text-slate-500 text-sm">
-        © 2025 Leticia Silveria da Costa. Feito com paixão entre Rio e São Paulo.
+        © {currentYear} Leticia Silveria da Costa. Feito com paixão entre Rio e São Paulo.
       </p>
     </motion.div>
   );
