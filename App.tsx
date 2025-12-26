@@ -7,12 +7,17 @@
  * entre diferentes seções do portfólio.
  */
 
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { WaveTransition } from './components/WaveTransition';
 import { FloatingBadge } from './components/FloatingBadge';
 import { BackgroundLayer } from './components/BackgroundLayer';
 import { ContactSection } from './components/ContactSection';
+import { SkillCard } from './components/SkillCard';
+import { ThemeToggle } from './components/ThemeToggle';
+import { useScrollProgress } from './hooks/useScrollProgress';
+import { useTheme } from './hooks/useTheme';
+import { SKILL_CARDS, PERSONAL_INFO } from './constants/portfolio';
 
 /**
  * Componente principal da aplicação de portfólio.
@@ -27,117 +32,93 @@ import { ContactSection } from './components/ContactSection';
  * @returns {JSX.Element} Componente React renderizado
  */
 const App: React.FC = () => {
-  // Referência ao container principal para cálculo do scroll
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Hook do Framer Motion que retorna o progresso do scroll (0 a 1)
-  // target: elemento a ser observado para o scroll
-  // offset: define quando o scroll começa e termina de ser rastreado
-  // Ajustado para terminar no final do container para que a barra de progresso complete
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"] // Termina quando chegamos ao final do container
-  });
+  // Hook de tema para gerenciar modo claro/escuro
+  const { theme, toggleTheme } = useTheme();
 
-  // Detecta se é mobile para ajustar performance
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  // Hook customizado que encapsula toda a lógica de scroll e transformações
+  const {
+    containerRef,
+    scrollYProgress,
+    smoothProgress,
+    sceneOpacity1,
+    sceneOpacity3,
+    scene3PointerEvents,
+    sceneOpacity4,
+    scene1TranslateY
+  } = useScrollProgress();
 
-  // Aplica um efeito de mola (spring) ao progresso do scroll para suavizar as animações
-  // Valores reduzidos para mobile para melhor performance
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: isMobile ? 50 : 100, // Reduzido para mobile
-    damping: isMobile ? 25 : 30,     // Reduzido para mobile
-    restDelta: 0.001
-  });
-
-  /**
-   * Breakpoints de scroll para controle das transições (ajustados para transições mais rápidas e suaves):
-   * - Tela 1: 0 - 0.2 (apresentação inicial)
-   * - Onda: 0.2 - 0.45 (transição com marquee de tecnologias)
-   * - Tela 3: 0.5 - 0.6 (trajetória técnica)
-   * - Tela 4: 0.6 - 1.0 (contato)
-   */
-
-  // Opacidade da primeira seção (Tela 1 - Apresentação)
-  // Fade out mais rápido entre 0.15 e 0.25 do progresso do scroll
-  const sceneOpacity1 = useTransform(smoothProgress, [0, 0.15, 0.25], [1, 1, 0]);
-  
-  // Opacidade da terceira seção (Tela 3 - Trajetória Técnica)
-  // Fade in entre 0.45 e 0.55, permanece visível até 0.6, fade out rápido até 0.65
-  const sceneOpacity3 = useTransform(smoothProgress, [0.45, 0.55, 0.6, 0.65], [0, 1, 1, 0]);
-  
-  // Controla pointer-events baseado na opacidade: habilita quando opacidade > 0.1
-  // Isso garante que a seleção de texto funcione quando a seção está visível
-  const scene3PointerEvents = useTransform(sceneOpacity3, (value: number) => value > 0.1 ? 'auto' : 'none');
-  
-  // Opacidade da quarta seção (Tela 4 - Contato)
-  // Fade in entre 0.65 e 0.75 do progresso do scroll, depois permanece visível
-  // A última seção aparece e fica fixa, permitindo que a barra complete
-  const sceneOpacity4 = useTransform(smoothProgress, [0.65, 0.75], [0, 1]);
+  // Desestrutura informações pessoais para uso no JSX
+  const { name, age, location, role, education } = PERSONAL_INFO;
 
   return (
-    // Container principal com altura de 400vh (4x a altura da viewport)
-    // Altura ajustada para que a última seção apareça e o scroll termine naturalmente
-    // A barra de progresso completa quando chegamos ao final
-    // selection: estiliza o texto selecionado com cores cyan
-    <div ref={containerRef} className="relative h-[400vh] w-full selection:bg-cyan-500 selection:text-white">
-      {/* Camada de fundo fixa que permanece visível durante todo o scroll */}
-      {/* pointer-events-none: permite que eventos de mouse passem através */}
-      <div className="fixed inset-0 h-screen w-full pointer-events-none" style={{ willChange: 'transform' }}>
-        <BackgroundLayer progress={smoothProgress} />
+    <div 
+      ref={containerRef} 
+      className="relative h-[400vh] w-full selection:bg-cyan-500 selection:text-white"
+    >
+      {/* Botão de toggle de tema */}
+      <ThemeToggle theme={theme} onToggle={toggleTheme} />
+
+      {/* Camada de fundo fixa com transição entre cenários RJ/SP */}
+      <div 
+        className="fixed inset-0 h-screen w-full pointer-events-none" 
+        style={{ willChange: 'transform' }}
+      >
+        <BackgroundLayer progress={smoothProgress} theme={theme} />
       </div>
 
-      {/* Componente de transição com onda que contém o marquee de tecnologias */}
+      {/* Componente de transição com onda e marquee de tecnologias */}
       <WaveTransition progress={smoothProgress} />
 
-      {/* TELA 01: Seção de Apresentação - Tema RJ/Praia */}
-      {/* sticky: mantém a seção fixa no topo durante o scroll */}
-      {/* overflow-hidden: esconde conteúdo que ultrapassa os limites */}
+      {/* SEÇÃO 1: Apresentação - Tema RJ/Praia */}
       <section className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden z-20">
-          <motion.div 
-            // Opacidade controlada pelo progresso do scroll
-            // y: movimento vertical suave para cima durante o scroll inicial (ajustado para acontecer mais cedo)
-            style={{ 
-              opacity: sceneOpacity1, 
-              y: useTransform(smoothProgress, [0, 0.25], [0, -100]),
-              willChange: 'transform, opacity'
-            }}
-            className="text-center px-4"
-          >
+        <motion.div 
+          style={{ 
+            opacity: sceneOpacity1, 
+            y: scene1TranslateY,
+            willChange: 'transform, opacity'
+          }}
+          className="text-center px-4"
+        >
           {/* Título principal com animação de entrada */}
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }} // Estado inicial: invisível e 20px abaixo
-            animate={{ opacity: 1, y: 0 }}   // Estado final: visível e na posição original
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-8xl font-black text-white font-display mb-6 drop-shadow-2xl"
           >
-            Leticia Silveria <br/>
-            {/* Parte do nome em cor cyan para destaque */}
-            <span className="text-cyan-300">da Costa</span>
+            {name.first} {name.middle} <br/>
+            <span className="text-cyan-300">{name.last}</span>
           </motion.h1>
           
-          {/* Informações pessoais com animação de fade in com delay */}
+          {/* Informações pessoais com animação de fade in */}
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }} // Delay de 0.3s para criar efeito sequencial
+            transition={{ delay: 0.3 }}
             className="text-xl md:text-2xl text-white/80 font-light mb-12"
           >
-            25 anos • Carioca • Desenvolvedora Full Stack
+            {age} anos • {location} • {role}
           </motion.p>
           
-          {/* Container para centralizar o badge de formação */}
-          {/* Responsivo: flex-col em mobile (um embaixo do outro), flex-row em desktop (lado a lado) */}
+          {/* Container responsivo para badges de formação */}
           <div className="flex flex-col md:flex-row justify-center items-center gap-3 md:gap-4">
-             <FloatingBadge text="Bacharelado em Ciências Matemáticas e da Terra - UFRJ" />
-             <FloatingBadge text="Desenvolvedora Full Stack - Rocketseat" />
+            {education.map((edu, index) => (
+              <FloatingBadge key={index} text={edu} />
+            ))}
           </div>
         </motion.div>
       </section>
 
-
-      {/* TELA 03: Seção de Trajetória Técnica - Tema Cidade/Tech */}
-      {/* Responsivo: padding reduzido em mobile (py-2) para caber todos os cards */}
-      <section className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden z-30 px-3 md:px-4 py-2 md:py-0 select-text" style={{ userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text', pointerEvents: 'auto' }}>
+      {/* SEÇÃO 3: Trajetória Técnica - Tema Cidade/Tech */}
+      <section 
+        className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden z-30 px-3 md:px-4 py-2 md:py-0 select-text" 
+        style={{ 
+          userSelect: 'text', 
+          WebkitUserSelect: 'text', 
+          MozUserSelect: 'text', 
+          msUserSelect: 'text', 
+          pointerEvents: 'auto' 
+        }}
+      >
         <motion.div 
           style={{ 
             opacity: sceneOpacity3,
@@ -151,96 +132,37 @@ const App: React.FC = () => {
           className="max-w-6xl w-full select-text"
         >
           {/* Título da seção */}
-          {/* Responsivo: text-lg em mobile, text-5xl em desktop */}
           <div className="text-center mb-2 md:mb-12">
-            <h3 className="text-lg md:text-5xl font-black text-white leading-tight select-text" style={{ userSelect: 'text' }}>Trajetória Técnica</h3>
+            <h3 
+              className="text-lg md:text-5xl font-black text-white leading-tight select-text" 
+              style={{ userSelect: 'text' }}
+            >
+              Trajetória Técnica
+            </h3>
           </div>
 
-          {/* Grid de cards: 1 coluna em mobile, 3 colunas em desktop */}
-          {/* Responsivo: gap-2 em mobile, gap-6 em desktop */}
+          {/* Grid responsivo de cards de habilidades */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-6">
-            {/* CARD 1: Back-end & APIs */}
-            <motion.div 
-              whileHover={{ y: -5 }} // Efeito de elevação ao passar o mouse
-              drag={false} // Desabilita drag para permitir seleção de texto
-              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-purple-500/50 transition-all select-text`}
-              style={{ willChange: 'transform', userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text' }}
-            >
-              {/* Ícone do card - código/back-end */}
-              {/* Responsivo: w-7 h-7 em mobile, w-10 h-10 em desktop */}
-              <div className="w-7 h-7 md:w-10 md:h-10 bg-purple-500 rounded-lg md:rounded-xl mb-2 md:mb-6 flex items-center justify-center">
-                {/* SVG de código (tags < />) */}
-                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
-              </div>
-              
-              {/* Título do card */}
-              {/* Responsivo: text-sm em mobile, text-xl em desktop */}
-              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4 select-text" style={{ userSelect: 'text' }}>Back-end & APIs</h3>
-              
-              {/* Lista de habilidades */}
-              {/* Responsivo: text-[10px] em mobile, text-sm em desktop, space-y-1 em mobile */}
-              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight select-text" style={{ userSelect: 'text' }}>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-purple-500 rounded-full"/> Node.js & TypeScript</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-purple-500 rounded-full"/> Arquitetura RESTful & HTTP</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-purple-500 rounded-full"/> Bancos de Dados SQL/NoSQL</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-purple-500 rounded-full"/> Deploy de Aplicações</li>
-              </ul>
-            </motion.div>
-
-            {/* CARD 2: UX/UI & Front-end */}
-            <motion.div 
-              whileHover={{ y: -5 }}
-              drag={false} // Desabilita drag para permitir seleção de texto
-              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-cyan-500/50 transition-all select-text`}
-              style={{ willChange: 'transform', userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text' }}
-            >
-              {/* Ícone do card - interface/UI */}
-              <div className="w-7 h-7 md:w-10 md:h-10 bg-cyan-500 rounded-lg md:rounded-xl mb-2 md:mb-6 flex items-center justify-center">
-                {/* SVG de layout/interface (janelas) */}
-                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
-              </div>
-              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4 select-text" style={{ userSelect: 'text' }}>UX/UI & Front-end</h3>
-              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight select-text" style={{ userSelect: 'text' }}>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-cyan-500 rounded-full"/> React & Fundamentos Web</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-cyan-500 rounded-full"/> Tailwind CSS Avançado</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-cyan-500 rounded-full"/> Estudos de UX/UI Design</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-cyan-500 rounded-full"/> HTML, CSS, JS ES6+ & TS</li>
-              </ul>
-            </motion.div>
-
-            {/* CARD 3: Infra & Tools */}
-            <motion.div 
-              whileHover={{ y: -5 }}
-              drag={false} // Desabilita drag para permitir seleção de texto
-              className={`bg-slate-900/60 ${isMobile ? 'backdrop-blur-sm' : 'backdrop-blur-xl'} border border-white/10 p-2.5 md:p-6 rounded-xl md:rounded-3xl hover:border-emerald-500/50 transition-all select-text`}
-              style={{ willChange: 'transform', userSelect: 'text', WebkitUserSelect: 'text', MozUserSelect: 'text', msUserSelect: 'text' }}
-            >
-              {/* Ícone do card - ferramentas/infraestrutura */}
-              <div className="w-7 h-7 md:w-10 md:h-10 bg-emerald-500 rounded-lg md:rounded-xl mb-2 md:mb-6 flex items-center justify-center">
-                {/* SVG de computador/ferramentas */}
-                <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
-              </div>
-              <h3 className="text-sm md:text-xl font-bold text-white mb-1.5 md:mb-4 select-text" style={{ userSelect: 'text' }}>Infra & Tools</h3>
-              <ul className="space-y-1 md:space-y-2 text-slate-400 text-[10px] md:text-sm leading-tight select-text" style={{ userSelect: 'text' }}>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Docker & Containerização</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Git & GitHub (Flow)</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Testes Automatizados</li>
-                <li className="flex items-center gap-2 select-text" style={{ userSelect: 'text' }}><div className="w-1 h-1 bg-emerald-500 rounded-full"/> Configuração de Ambiente</li>
-              </ul>
-            </motion.div>
+            {SKILL_CARDS.map((card) => (
+              <SkillCard 
+                key={card.id}
+                id={card.id}
+                title={card.title}
+                color={card.color}
+                iconType={card.iconType}
+                skills={card.skills}
+              />
+            ))}
           </div>
         </motion.div>
       </section>
 
-
-      {/* TELA 04: Seção de Contato / Final */}
-      <section className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden z-20 px-4">
+      {/* SEÇÃO 4: Contato */}
+      <section className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden z-40 px-4 pointer-events-none">
         <ContactSection opacity={sceneOpacity4} />
       </section>
       
-      {/* Indicador de progresso do scroll na parte inferior da tela */}
-      {/* scaleX: escala horizontal baseada no progresso do scroll (0 a 1) */}
-      {/* origin-left: a animação começa da esquerda */}
+      {/* Indicador de progresso do scroll na parte inferior */}
       <motion.div 
         style={{ 
           scaleX: scrollYProgress,

@@ -14,29 +14,62 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
+        /* CSS Variables para tema claro/escuro */
+        :root {
+            --bg-primary: #0ea5e9;
+            --bg-secondary: #bae6fd;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --scrollbar-track: #4a90e2;
+            --scrollbar-thumb: #87ceeb;
+            --scrollbar-thumb-hover: #5b9fe5;
+        }
+
+        /* Dark Mode Variables */
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --scrollbar-track: #0f172a;
+            --scrollbar-thumb: #1e293b;
+            --scrollbar-thumb-hover: #334155;
+        }
+
         body {
             margin: 0;
             padding: 0;
             overflow-x: hidden;
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
+            background-color: var(--scrollbar-track);
+            transition: background-color 1s ease;
         }
+
         .font-display {
             font-family: 'Space+Grotesk', sans-serif;
         }
+
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: var(--scrollbar-track);
+            transition: background 1s ease;
         }
+
         ::-webkit-scrollbar-thumb {
-            background: #334155;
+            background: var(--scrollbar-thumb);
             border-radius: 4px;
+            transition: background 1s ease;
         }
+
         ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+            background: var(--scrollbar-thumb-hover);
         }
+
         /* Garante que o texto na seção de Trajetória Técnica possa ser selecionado */
         section[class*="Trajetória"] *,
         .select-text,
@@ -47,10 +80,12 @@
             -ms-user-select: text !important;
             user-select: text !important;
         }
+
         /* Força pointer-events auto na seção de Trajetória Técnica quando visível */
         section.z-30 {
             pointer-events: auto !important;
         }
+
         section.z-30 * {
             pointer-events: auto !important;
         }

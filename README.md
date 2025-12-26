@@ -17,31 +17,53 @@ Portfólio pessoal interativo desenvolvido com React, TypeScript e Framer Motion
 • Estrutura do Projeto
 ```
 sitecurriculo/
-├── components/           # Componentes React
-│   ├── BackgroundLayer.tsx      # Camada de fundo animada (RJ/Praia → SP/Cidade)
+├── components/              # Componentes React reutilizáveis
+│   ├── BackgroundLayer.tsx      # Camada de fundo animada (RJ/Praia → SP/Cidade) com suporte a tema
 │   ├── ContactSection.tsx       # Seção de contato com links sociais
 │   ├── FloatingBadge.tsx        # Badge flutuante com animação
-│   ├── TechMarquee.tsx          # Marquee animado de tecnologias
-│   └── WaveTransition.tsx        # Transição com onda e marquee
-├── App.tsx               # Componente principal da aplicação
-├── index.tsx             # Ponto de entrada da aplicação
-├── index.html            # Template HTML base
-├── vite.config.ts        # Configuração do Vite
-├── tsconfig.json         # Configuração do TypeScript
-└── package.json          # Dependências e scripts do projeto
+│   ├── SkillCard.tsx            # Card reutilizável de habilidades técnicas
+│   ├── ThemeToggle.tsx          # Botão de toggle para dark mode
+│   └── WaveTransition.tsx       # Transição com onda e marquee de tecnologias
+├── hooks/                   # Custom React Hooks
+│   ├── useScrollProgress.ts     # Hook para gerenciar progresso de scroll e transformações
+│   └── useTheme.ts              # Hook para gerenciar tema (claro/escuro) e persistência
+├── utils/                   # Funções auxiliares e utilitários
+│   └── buildingGenerator.ts     # Geração de prédios para o skyline da cidade
+├── constants/               # Dados estáticos e configurações
+│   └── portfolio.ts             # Dados do portfólio (habilidades, informações pessoais, etc)
+├── App.tsx                  # Componente principal da aplicação
+├── index.tsx                # Ponto de entrada da aplicação
+├── index.html               # Template HTML base
+├── vite.config.ts           # Configuração do Vite
+├── tsconfig.json            # Configuração do TypeScript
+├── package.json             # Dependências e scripts do projeto
+├── README.md                # Documentação do projeto
+├── REFACTORING_SUMMARY.md   # Resumo detalhado da refatoração realizada
+├── DARK_MODE_GUIDE.md       # Guia completo da implementação de dark mode
+├── SUNSET_SCENE_GUIDE.md    # Guia do cenário de entardecer com nuvens e helicópteros
+└── TECHNICAL_GUIDE.md       # Guia técnico do sistema de scroll e animações
 ```
 
 
 • Características Principais:
 
+• Dark Mode
+   - **Toggle de Tema**: Botão fixo no canto superior esquerdo para alternar entre modo claro e escuro
+   - **Sol → Lua**: Transição visual automática entre sol (light) e lua com crateras (dark)
+   - **Céu Estrelado**: 50 estrelas com animação de piscar no modo escuro
+   - **Persistência**: Preferência salva no localStorage
+   - **Detecção de Sistema**: Respeita preferência do sistema operacional (prefers-color-scheme)
+   - **CSS Variables**: Sistema modular de cores para fácil manutenção
+   - **Transições Suaves**: Todas as mudanças com transição de 1 segundo
+
 • Animações Baseadas em Scroll
    - **Scroll Progress Tracking**: O portfólio utiliza o progresso do scroll (0 a 1) para controlar todas as animações
    - **Transições Suaves**: Animações suavizadas com efeito spring do Framer Motion
    - **4 Seções Principais**:
-   1. **Tela 1 (0-0.3)**: Apresentação inicial com tema RJ/Praia
-   2. **Transição (0.3-0.55)**: Onda animada com marquee de tecnologias
-   3. **Tela 3 (0.55-0.85)**: Trajetória técnica com cards de habilidades
-   4. **Tela 4 (0.85-1.0)**: Seção de contato
+   1. **Tela 1 (0-0.25)**: Apresentação inicial com tema RJ/Praia
+   2. **Transição (0.2-0.45)**: Onda animada com marquee de tecnologias
+   3. **Tela 3 (0.45-0.65)**: Trajetória técnica com cards de habilidades
+   4. **Tela 4 (0.65-1.0)**: Seção de contato
 
 
 • Design Responsivo
@@ -55,8 +77,11 @@ sitecurriculo/
 
    • BackgroundLayer
       - Transição visual entre dois cenários:
-      - **RJ/Praia**: Gradiente azul claro, sol amarelo, ondas SVG
-      - **SP/Cidade**: Gradiente escuro, skyline de prédios com janelas iluminadas
+      - **RJ/Praia**: Gradiente azul claro/escuro, sol/lua, ondas SVG
+      - **SP/Cidade**: Céu de entardecer (modo claro) ou noturno (modo escuro), skyline de prédios
+      - **Nuvens**: 8 nuvens estilizadas em diferentes camadas parallax (apenas light mode)
+      - **Helicópteros**: 2 helicópteros animados passando em diferentes profundidades (apenas light mode)
+      - **Estrelas**: 50 estrelas piscantes no céu noturno (apenas dark mode)
       - Animações sincronizadas com o scroll
 
    • WaveTransition
@@ -195,23 +220,33 @@ sitecurriculo/
 
 • Notas de Desenvolvimento
 
+   • Arquitetura
+      - **Componentes reutilizáveis**: Seguindo princípio DRY (Don't Repeat Yourself)
+      - **Separação de responsabilidades**: Lógica separada de apresentação
+      - **Custom hooks**: Encapsulamento de lógica complexa
+      - **Type-safe**: TypeScript em 100% do código
+      - **Documentação completa**: JSDoc em todas as funções e interfaces
+
    • Animações
       - Todas as animações são controladas pelo progresso do scroll
+      - Hook customizado `useScrollProgress` gerencia todas as transformações
       - Uso de `useTransform` do Framer Motion para mapear valores
       - `useSpring` para suavizar as transições
       - Breakpoints cuidadosamente calibrados para transições suaves
 
    • Performance
-      - Valores aleatórios calculados uma vez (não em cada render)
+      - Valores aleatórios calculados uma vez com `useMemo` (não em cada render)
       - Keys únicas para otimização do React
-      - Lazy loading de componentes quando possível
-      - Animações otimizadas com `will-change` implícito
+      - Otimizações específicas para mobile (menos elementos, blur reduzido)
+      - Animações otimizadas com `will-change`
+      - Componentes separados para melhor code splitting
 
    • Acessibilidade
       - Links externos com `rel="noopener noreferrer"`
       - Estrutura semântica HTML
       - Contraste adequado de cores
       - Navegação por teclado funcional
+      - Suporte à seleção de texto preservado
 
  
 • Sobre
@@ -227,12 +262,21 @@ sitecurriculo/
 
 
 • Destaques Técnicos
+   - **Dark Mode**: Sistema completo de tema claro/escuro com persistência
+   - **Cenário de Entardecer**: Céu realista com gradiente azul-laranja-rosa, nuvens e helicópteros animados
+   - **Parallax 3D**: Múltiplas camadas de profundidade (nuvens, helicópteros, prédios em diferentes z-index)
    - **Scroll-based animations**: Animações baseadas no progresso do scroll
+   - **Custom Hooks**: Hooks `useScrollProgress` e `useTheme` para gerenciar estado complexo
+   - **Component-driven**: Componentes reutilizáveis e modulares
    - **Glassmorphism**: Efeito de vidro fosco nos cards
-   - **SVG Animations**: Ondas e formas criadas com SVG
+   - **SVG Animations**: Ondas, formas e helicópteros criados com SVG animado
    - **Responsive Design**: Layout totalmente adaptativo
    - **TypeScript**: Tipagem estática para maior segurança
-   - **Component-based**: Arquitetura modular e reutilizável
+   - **CSS Variables**: Sistema modular de cores para temas
+   - **LocalStorage**: Persistência de preferências do usuário
+   - **Performance Optimized**: useMemo, conditional rendering, CSS transforms
+   - **Clean Code**: Código refatorado seguindo princípios SOLID e DRY
+   - **Well Documented**: JSDoc completo e comentários técnicos
 
 ---
 

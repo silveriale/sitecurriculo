@@ -3,30 +3,49 @@
  * 
  * Este arquivo contém o componente BackgroundLayer que gerencia o fundo visual
  * do portfólio. Cria uma transição suave entre dois cenários:
- * - Cenário RJ/Praia: gradiente azul claro com sol e ondas
+ * - Cenário RJ/Praia: gradiente azul claro com sol/lua e ondas
  * - Cenário SP/Cidade: gradiente escuro com skyline de prédios
  * 
  * A transição é controlada pelo progresso do scroll da página.
+ * Suporta tema claro/escuro com transição automática entre sol e lua.
  */
 
 import React from 'react';
 import { motion, useTransform, MotionValue } from 'framer-motion';
+import { Theme } from '../hooks/useTheme';
+import { BeachScene } from './background/BeachScene';
+import { CitySkyline } from './background/CitySkyline';
+import { CityStars } from './background/Stars';
+import { Clouds } from './background/Clouds';
+import { Helicopter } from './background/Helicopter';
+import { Airplane } from './background/Airplane';
 
 /**
  * Props do componente BackgroundLayer.
  * 
  * @interface BackgroundLayerProps
  * @property {MotionValue<number>} progress - Progresso do scroll (0 a 1) usado para controlar transições
+ * @property {Theme} theme - Tema atual ('light' ou 'dark')
  */
 interface BackgroundLayerProps {
   progress: MotionValue<number>;
+  theme: Theme;
 }
+
+/**
+ * Detecta se o dispositivo é mobile baseado na largura da janela.
+ * 
+ * @returns {boolean} true se a largura da janela é menor que 768px
+ */
+const isMobileDevice = (): boolean => {
+  return typeof window !== 'undefined' && window.innerWidth < 768;
+};
 
 /**
  * Componente de camada de fundo animada.
  * 
  * Gerencia a transição visual entre dois cenários:
- * 1. Cenário RJ/Praia (início): gradiente azul claro, sol amarelo, ondas
+ * 1. Cenário RJ/Praia (início): gradiente azul claro/escuro, sol/lua, ondas, estrelas
  * 2. Cenário SP/Cidade (meio/fim): gradiente escuro, skyline de prédios
  * 
  * As animações são baseadas no progresso do scroll:
@@ -34,168 +53,95 @@ interface BackgroundLayerProps {
  * - 0.35 a 0.55: Transição entre cenários
  * - 0.55 em diante: Cenário SP visível
  * 
+ * Suporta tema claro/escuro com transições suaves.
+ * 
  * @param {BackgroundLayerProps} props - Props do componente
  * @param {MotionValue<number>} props.progress - Progresso do scroll (0 a 1)
+ * @param {Theme} props.theme - Tema atual ('light' ou 'dark')
  * @returns {JSX.Element} Componente React renderizado
  */
-export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ progress }) => {
-  // Detecta se é mobile para reduzir elementos
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ progress, theme }) => {
+  // Detecta dispositivo mobile para otimizações
+  const isMobile = isMobileDevice();
   
   /**
-   * Controla o gradiente de fundo baseado no progresso do scroll.
-   * 
-   * Transição entre:
-   * - Gradiente azul claro (RJ/Praia): linear-gradient(to bottom, #0ea5e9, #bae6fd)
-   * - Gradiente escuro (SP/Cidade): linear-gradient(to bottom, #0f172a, #1e1b4b)
-   * 
-   * A transição ocorre mais cedo entre 0.25 e 0.4 do progresso do scroll (ajustado para transição mais rápida).
+   * Transição de gradiente de fundo baseada no tema e progresso.
+   * Light: azul claro (praia) para escuro (cidade)
+   * Dark: azul escuro (noite na praia) para muito escuro (cidade noturna)
    */
   const bgGradient = useTransform(
     progress,
-    [0.25, 0.4], // Breakpoints do progresso (ajustados para mais rápido)
-    [
-      "linear-gradient(to bottom, #0ea5e9, #bae6fd)", // RJ Beach - azul claro
-      "linear-gradient(to bottom, #0f172a, #1e1b4b)"  // SP City - escuro com tom roxo
+    [0.25, 0.4],
+    theme === 'light'
+      ? [
+          "linear-gradient(to bottom, #0ea5e9, #bae6fd)",
+          "linear-gradient(to bottom, #87ceeb , #87CEEB)"
+        ]
+      : [
+          "linear-gradient(to bottom, #0f172a, #1e293b)",
+          "linear-gradient(to bottom, #020617, #0c0a1f)"
     ]
   );
 
   /**
-   * Controla a posição vertical do sol (cenário RJ).
-   * 
-   * O sol começa em y: 100 (visível) e sobe para y: -200 (fora da tela)
-   * durante o progresso de 0 a 0.3 (ajustado para mais rápido).
+   * Posição vertical do sol.
+   * Move de y: 100 para y: -200 (sobe e desaparece) entre 0 e 0.3.
    */
   const sunY = useTransform(progress, [0, 0.3], [100, -200]);
   
   /**
-   * Controla a opacidade do sol (cenário RJ).
-   * 
-   * O sol desaparece gradualmente entre 0.2 e 0.3 do progresso do scroll (ajustado para mais rápido).
+   * Opacidade do sol e ondas.
+   * Desaparece entre 0.2 e 0.3 do progresso.
    */
   const sunOpacity = useTransform(progress, [0.2, 0.3], [1, 0]);
 
   /**
-   * Controla a posição vertical do skyline (cenário SP).
-   * 
-   * O skyline começa em y: 600 (abaixo da tela) e sobe para y: 0 (posição normal)
-   * durante o progresso de 0.3 a 0.55 (ajustado para mais rápido).
+   * Posição vertical do skyline.
+   * Move de y: 600 (abaixo) para y: 0 (posição normal) entre 0.3 e 0.55.
    */
   const cityY = useTransform(progress, [0.3, 0.55], [600, 0]);
   
   /**
-   * Controla a opacidade do skyline (cenário SP).
-   * 
-   * O skyline aparece gradualmente entre 0.35 e 0.5 do progresso do scroll (ajustado para mais rápido).
+   * Opacidade do skyline.
+   * Aparece entre 0.35 e 0.5 do progresso.
    */
   const cityOpacity = useTransform(progress, [0.35, 0.5], [0, 1]);
 
-  // Reduz número de prédios e janelas em mobile para melhor performance
-  const buildingCount = isMobile ? 8 : 15;
-  const windowsPerBuilding = isMobile ? 6 : 12;
-
   return (
-    // Container principal com gradiente de fundo animado
     <motion.div 
       style={{ 
         background: bgGradient,
         willChange: 'background'
-      }} // Gradiente controlado pelo scroll
-      className="absolute inset-0 overflow-hidden" // Cobre toda a tela, esconde overflow
+      }}
+      className="absolute inset-0 overflow-hidden transition-colors duration-1000"
     >
-      {/* Elementos do cenário RJ/Praia */}
-      
-      {/* Sol: círculo amarelo com blur para efeito de brilho */}
-      {/* Responsivo: w-32 h-32 em mobile, w-64 h-64 em desktop */}
-      {/* Blur reduzido em mobile */}
-      <motion.div 
-        style={{ 
-          y: sunY, 
-          opacity: sunOpacity,
-          willChange: 'transform, opacity'
-        }} // Posição e opacidade controladas
-        className={`absolute top-20 right-20 w-32 h-32 md:w-64 md:h-64 bg-yellow-300 rounded-full ${isMobile ? 'blur-xl' : 'blur-2xl'} opacity-60`}
-      />
-      
-      {/* Ondas: SVG com forma de onda na parte inferior */}
-      {/* fill-sky-800/40: cor azul escura com 40% de opacidade */}
-      <motion.svg 
-        style={{ 
-          opacity: sunOpacity,
-          willChange: 'opacity'
-        }} // Opacidade sincronizada com o sol
-        className="absolute bottom-0 left-0 w-full h-[30vh] fill-sky-800/40"
-        viewBox="0 0 1000 300" 
-        preserveAspectRatio="none" // Mantém proporção sem distorção
-      >
-        {/* Path que define a forma das ondas usando curvas de Bézier */}
-        <path d="M0,300 L0,250 C100,200 200,100 300,150 C400,200 500,50 600,100 C700,150 800,250 1000,200 L1000,300 Z" />
-      </motion.svg>
+      {/* Estrelas do céu noturno da cidade (apenas dark mode) */}
+      <CityStars theme={theme} opacity={cityOpacity} />
 
-      {/* Elementos do cenário SP/Cidade */}
-      <motion.div
-        style={{ 
-          y: cityY, 
-          opacity: cityOpacity,
-          willChange: 'transform, opacity'
-        }} // Posição e opacidade controladas
-        className="absolute inset-x-0 bottom-0 h-full pointer-events-none" // pointer-events-none: não interfere com interações
-      >
-         {/* Container do skyline: prédios na parte inferior */}
-         {/* h-[60vh]: altura de 60% da viewport */}
-         {/* flex items-end: alinha prédios na parte inferior */}
-         <div className="absolute bottom-0 w-full h-[60vh] flex items-end justify-around gap-2 px-10">
-            {/* Gera prédios com características aleatórias - reduzido em mobile */}
-            {/* Usa IIFE (Immediately Invoked Function Expression) para calcular valores aleatórios uma vez */}
-            {(() => {
-              // Cria array de prédios com propriedades calculadas uma vez
-              const buildings = Array.from({ length: buildingCount }, (_, i) => ({
-                id: i,                                    // ID único para key do React
-                height: 20 + Math.random() * 60,         // Altura aleatória entre 20% e 80%
-                // Cria janelas por prédio com propriedades aleatórias - reduzido em mobile
-                windows: Array.from({ length: windowsPerBuilding }, (_, j) => ({
-                  id: j,                                 // ID único para key do React
-                  isYellow: Math.random() > 0.8,         // 20% de chance de ser amarelo (luz acesa)
-                  opacity: Math.random()                  // Opacidade aleatória para variação visual
-                })),
-                hasAntenna: Math.random() > 0.6          // 40% de chance de ter antena
-              }));
-              
-              // Renderiza cada prédio
-              return buildings.map((building) => (
-                <div 
-                    key={building.id} 
-                    className="flex-1 bg-slate-900 border-t border-x border-slate-800 relative rounded-t-lg"
-                    style={{ 
-                      height: `${building.height}%`,
-                      willChange: 'transform'
-                    }} // Altura dinâmica baseada no valor calculado
-                >
-                    {/* Grid de janelas: 2 colunas, linhas variadas */}
-                    <div className={`grid grid-cols-2 gap-1 p-2`}>
-                        {building.windows.map((window) => (
-                            <div 
-                                key={window.id} 
-                                // Classe condicional: amarelo se isYellow, senão cinza escuro
-                                className={`w-1 h-1 rounded-sm ${window.isYellow ? 'bg-yellow-400' : 'bg-slate-800'}`}
-                                style={{ opacity: window.opacity }} // Opacidade individual para cada janela
-                            />
-                        ))}
-                    </div>
-                    {/* Antena: linha vertical roxa com brilho (shadow) - removida em mobile */}
-                    {/* Renderiza apenas se hasAntenna for true e não for mobile */}
-                    {building.hasAntenna && !isMobile && (
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-[2px] h-8 bg-purple-500 shadow-[0_0_10px_purple]" />
-                    )}
-                </div>
-              ));
-            })()}
-         </div>
-         
-         {/* Gradiente de fade no topo do skyline para transição suave */}
-         {/* h-1/3: altura de 33% do container */}
-         <div className="absolute bottom-0 w-full h-1/3 bg-gradient-to-t from-[#0f172a] to-transparent" />
-      </motion.div>
+      {/* Avião voando (apenas dark mode) */}
+      <Airplane theme={theme} cityOpacity={cityOpacity} />
+
+      {/* Nuvens do céu diurno (apenas light mode) */}
+      <Clouds theme={theme} cityOpacity={cityOpacity} />
+
+      {/* Helicópteros (apenas light mode) */}
+      <Helicopter theme={theme} cityOpacity={cityOpacity} />
+
+      {/* Cenário RJ/Praia */}
+      <BeachScene 
+        sunY={sunY} 
+        sunOpacity={sunOpacity} 
+        isMobile={isMobile}
+        theme={theme}
+      />
+
+      {/* Cenário SP/Cidade */}
+      <CitySkyline 
+        cityY={cityY} 
+        cityOpacity={cityOpacity} 
+        isMobile={isMobile}
+        theme={theme}
+      />
     </motion.div>
   );
 };
