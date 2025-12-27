@@ -34,18 +34,18 @@ export const Airplane: React.FC<AirplaneProps> = ({ theme, cityOpacity }) => {
         className="absolute"
         style={{ 
           top: '20%', 
-          left: '-8%',
+          left: '-10%',
           zIndex: 28
         }}
         animate={{
-          x: [0, 2200],
+          x: ['0vw', '120vw'],
           y: [0, -15, 0, 15, 0]
         }}
         transition={{
           x: {
-            duration: 30,
+            duration: 35,
             repeat: Infinity,
-            repeatDelay: 45,
+            repeatDelay: 8,
             ease: "linear"
           },
           y: {
@@ -118,21 +118,21 @@ export const Airplane: React.FC<AirplaneProps> = ({ theme, cityOpacity }) => {
         className="absolute"
         style={{ 
           top: '35%', 
-          left: '-6%',
+          left: '-8%',
           zIndex: 12,
           opacity: 0.6,
           scale: 0.5
         }}
         animate={{
-          x: [0, 2000],
+          x: ['0vw', '120vw'],
           y: [0, -10, 0, 10, 0]
         }}
         transition={{
           x: {
-            duration: 40,
+            duration: 45,
             repeat: Infinity,
-            repeatDelay: 60,
-            delay: 20,
+            repeatDelay: 12,
+            delay: 22,
             ease: "linear"
           },
           y: {

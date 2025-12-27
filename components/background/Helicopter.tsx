@@ -38,14 +38,14 @@ export const Helicopter: React.FC<HelicopterProps> = ({ theme, cityOpacity }) =>
           zIndex: 30
         }}
         animate={{
-          x: [0, 2000],
+          x: ['0vw', '115vw'],
           y: [0, -20, 0, 20, 0]
         }}
         transition={{
           x: {
-            duration: 22,
+            duration: 25,
             repeat: Infinity,
-            repeatDelay: 35,
+            repeatDelay: 10,
             ease: "linear"
           },
           y: {
@@ -115,15 +115,15 @@ export const Helicopter: React.FC<HelicopterProps> = ({ theme, cityOpacity }) =>
           scale: 0.7
         }}
         animate={{
-          x: [0, 1800],
+          x: ['0vw', '115vw'],
           y: [0, -15, 0, 15, 0]
         }}
         transition={{
           x: {
-            duration: 28,
+            duration: 32,
             repeat: Infinity,
-            repeatDelay: 45,
-            delay: 15,
+            repeatDelay: 14,
+            delay: 17,
             ease: "linear"
           },
           y: {

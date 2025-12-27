@@ -51,8 +51,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ opacity }) => {
       style={{ opacity }}
       className="text-center w-full max-w-3xl pointer-events-auto"
     >
-      {/* Linha decorativa com gradiente */}
-      <div className="h-[2px] w-24 bg-gradient-to-r from-cyan-400 to-purple-500 mx-auto mb-12" />
 
       {/* Container de conteúdo com animação de entrada */}
       <motion.div
